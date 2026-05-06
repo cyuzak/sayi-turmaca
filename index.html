@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sayı Turmacası</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      font-family: 'Segoe UI', sans-serif;
+      color: #fff;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 24px;
+      padding: 48px 40px;
+      width: 420px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+
+    .subtitle {
+      color: rgba(255,255,255,0.5);
+      font-size: 0.9rem;
+      margin-bottom: 32px;
+    }
+
+    .haklar {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+
+    .hak {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #e94560;
+      transition: all 0.3s;
+      box-shadow: 0 0 8px rgba(233,69,96,0.5);
+    }
+
+    .hak.kullanildi {
+      background: rgba(255,255,255,0.12);
+      box-shadow: none;
+    }
+
+    .ipucu {
+      font-size: 2.8rem;
+      min-height: 60px;
+      margin-bottom: 12px;
+      transition: all 0.3s;
+    }
+
+    .mesaj {
+      font-size: 1rem;
+      min-height: 28px;
+      color: rgba(255,255,255,0.75);
+      margin-bottom: 28px;
+      transition: all 0.3s;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input[type="number"] {
+      flex: 1;
+      padding: 14px 18px;
+      border-radius: 12px;
+      border: 1.5px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      font-size: 1.1rem;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    input[type="number"]:focus {
+      border-color: #e94560;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+    button {
+      padding: 14px 22px;
+      border-radius: 12px;
+      border: none;
+      background: #e94560;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    button:hover { background: #c73652; }
+    button:active { transform: scale(0.97); }
+
+    #tekrarBtn {
+      width: 100%;
+      margin-top: 8px;
+      background: rgba(255,255,255,0.12);
+      display: none;
+    }
+
+    #tekrarBtn:hover { background: rgba(255,255,255,0.2); }
+
+    .gecmis {
+      max-height: 130px;
+      overflow-y: auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      margin-top: 16px;
+    }
+
+    .gecmis span {
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .shake {
+      animation: shake 0.35s ease;
+    }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-6px); }
+      80% { transform: translateX(6px); }
+    }
+
+    .bounce {
+      animation: bounce 0.5s ease;
+    }
+
+    @keyframes bounce {
+      0%,100% { transform: scale(1); }
+      50% { transform: scale(1.12); }
+    }
+  </style>
+</head>
+<body>
+  <div class="card" id="kart">
+    <h1>🎲 Sayı Turmacası</h1>
+    <p class="subtitle">1 ile 100 arasında bir sayı tuttum</p>
+
+    <div class="haklar" id="haklar"></div>
+
+    <div class="ipucu" id="ipucu">🤔</div>
+    <div class="mesaj" id="mesaj">Aklındaki sayıyı yaz ve dene!</div>
+
+    <div class="input-group">
+      <input type="number" id="girdi" min="1" max="100" placeholder="1 – 100" />
+      <button onclick="tahminEt()">Dene</button>
+    </div>
+
+    <button id="tekrarBtn" onclick="oyunuBaslat()">🔄 Tekrar Oyna</button>
+
+    <div class="gecmis" id="gecmis"></div>
+  </div>
+
+  <script>
+    let gizliSayi, kalanHak, bitti;
+
+    function oyunuBaslat() {
+      gizliSayi = Math.floor(Math.random() * 100) + 1;
+      kalanHak = 10;
+      bitti = false;
+
+      document.getElementById('girdi').value = '';
+      document.getElementById('girdi').disabled = false;
+      document.getElementById('ipucu').textContent = '🤔';
+      document.getElementById('mesaj').textContent = 'Aklındaki sayıyı yaz ve dene!';
+      document.getElementById('gecmis').innerHTML = '';
+      document.getElementById('tekrarBtn').style.display = 'none';
+
+      hakGuncelle();
+    }
+
+    function hakGuncelle() {
+      const div = document.getElementById('haklar');
+      div.innerHTML = '';
+      for (let i = 0; i < 10; i++) {
+        const d = document.createElement('div');
+        d.className = 'hak' + (i >= kalanHak ? ' kullanildi' : '');
+        div.appendChild(d);
+      }
+    }
+
+    function tahminEt() {
+      if (bitti) return;
+
+      const girdi = document.getElementById('girdi');
+      const sayi = parseInt(girdi.value);
+
+      if (isNaN(sayi) || sayi < 1 || sayi > 100) {
+        ipucuGoster('⚠️', '1 ile 100 arasında bir sayı gir!');
+        sarsKart();
+        return;
+      }
+
+      kalanHak--;
+      hakGuncelle();
+      gecmiseEkle(sayi);
+      girdi.value = '';
+
+      if (sayi === gizliSayi) {
+        bitti = true;
+        document.getElementById('girdi').disabled = true;
+        document.getElementById('tekrarBtn').style.display = 'block';
+        ipucuGoster('👑', `Doğru! ${10 - kalanHak}. denemede buldun! KRALsın!`);
+        konfeti();
+        return;
+      }
+
+      if (kalanHak === 0) {
+        bitti = true;
+        document.getElementById('girdi').disabled = true;
+        document.getElementById('tekrarBtn').style.display = 'block';
+        ipucuGoster('😤', `Yuh sana! Sayı ${gizliSayi} idi!`);
+        return;
+      }
+
+      if (sayi < gizliSayi) {
+        ipucuGoster('⬆️', `Daha YUKARI git! (${kalanHak} hak kaldı)`);
+      } else {
+        ipucuGoster('⬇️', `Daha AŞAĞI gel! (${kalanHak} hak kaldı)`);
+      }
+
+      sarsKart();
+    }
+
+    function ipucuGoster(emoji, yazi) {
+      document.getElementById('ipucu').textContent = emoji;
+      document.getElementById('mesaj').textContent = yazi;
+      document.getElementById('ipucu').classList.remove('bounce');
+      void document.getElementById('ipucu').offsetWidth;
+      document.getElementById('ipucu').classList.add('bounce');
+    }
+
+    function sarsKart() {
+      const k = document.getElementById('kart');
+      k.classList.remove('shake');
+      void k.offsetWidth;
+      k.classList.add('shake');
+    }
+
+    function gecmiseEkle(sayi) {
+      const div = document.getElementById('gecmis');
+      const span = document.createElement('span');
+      span.textContent = sayi;
+      div.appendChild(span);
+    }
+
+    function konfeti() {
+      const renkler = ['#e94560','#f5a623','#7ed321','#4a90e2','#9b59b6'];
+      for (let i = 0; i < 60; i++) {
+        setTimeout(() => {
+          const el = document.createElement('div');
+          el.style.cssText = `
+            position:fixed;
+            left:${Math.random()*100}vw;
+            top:-10px;
+            width:${6+Math.random()*8}px;
+            height:${6+Math.random()*8}px;
+            background:${renkler[Math.floor(Math.random()*renkler.length)]};
+            border-radius:${Math.random()>0.5?'50%':'2px'};
+            pointer-events:none;
+            z-index:9999;
+            opacity:1;
+            transition:transform ${1+Math.random()}s ease, opacity ${1+Math.random()}s ease;
+          `;
+          document.body.appendChild(el);
+          requestAnimationFrame(() => {
+            el.style.transform = `translateY(${80+Math.random()*40}vh) rotate(${Math.random()*720}deg)`;
+            el.style.opacity = '0';
+          });
+          setTimeout(() => el.remove(), 2500);
+        }, i * 30);
+      }
+    }
+
+    document.getElementById('girdi').addEventListener('keydown', e => {
+      if (e.key === 'Enter') tahminEt();
+    });
+
+    oyunuBaslat();
+  </script>
+</body>
+</html>
